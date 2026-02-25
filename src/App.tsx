@@ -174,6 +174,8 @@ export default function App() {
     if (m.includes('energi') || m.includes('creativ') || m.includes('energy') || m.includes('arancione')) return { primary: '#F97316', accent: '#EA580C' }; // Arancione
     if (m.includes('amore') || m.includes('dolcez') || m.includes('love') || m.includes('rosa')) return { primary: '#EC4899', accent: '#DB2777' }; // Rosa
     if (m.includes('calm') || m.includes('pace') || m.includes('peace') || m.includes('azzurro')) return { primary: '#06B6D4', accent: '#0891B2' }; // Azzurro
+    if (m.includes('neon') || m.includes('night')) return { primary: '#FF00FF', accent: '#00FFFF' }; // Neon (Magenta/Ciano)
+    if (m.includes('futur') || m.includes('tecnolog') || m.includes('tech')) return { primary: '#00D1FF', accent: '#0075FF' }; // Cyber/Tech (Azzurro/Blu)
     return null;
   };
 
@@ -401,15 +403,6 @@ export default function App() {
           <div className="pt-8">
             <MoodInput onSearch={handleSearch} onChange={handleMoodChange} isLoading={isLoading} translations={t} />
           </div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-30"
-        >
-          <div className="w-[1px] h-12 bg-[var(--vibe-text)]" />
         </motion.div>
       </section>
 

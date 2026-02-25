@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Sparkles, Send } from 'lucide-react';
+import { Search, Sparkles, Send, Zap, Cpu, Globe, Compass } from 'lucide-react';
 
 interface MoodInputProps {
   onSearch: (mood: string) => void;
@@ -27,10 +27,11 @@ export const MoodInput: React.FC<MoodInputProps> = ({ onSearch, onChange, isLoad
   };
 
   const suggestions = [
-    'Cyberpunk Tokyo',
-    'Minimalist Alps',
-    'Tuscany Sunset',
-    'Lunar Iceland'
+    { label: 'Neon Nightlife', icon: <Sparkles size={14} /> },
+    { label: 'Futurismo', icon: <Zap size={14} /> },
+    { label: 'Alta Tecnologia', icon: <Cpu size={14} /> },
+    { label: 'Cyberpunk Tokyo', icon: <Globe size={14} /> },
+    { label: 'Minimalist Alps', icon: <Compass size={14} /> }
   ];
 
   return (
@@ -82,14 +83,15 @@ export const MoodInput: React.FC<MoodInputProps> = ({ onSearch, onChange, isLoad
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {suggestions.map((suggestion) => (
           <button
-            key={suggestion}
+            key={suggestion.label}
             onClick={() => {
-              setInput(suggestion);
-              onSearch(suggestion);
+              handleInputChange(suggestion.label);
+              onSearch(suggestion.label);
             }}
-            className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/5 hover:bg-black/10 transition-colors text-[var(--vibe-text)] opacity-60 hover:opacity-100"
+            className="text-xs font-medium px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-black/5 hover:bg-[var(--vibe-primary)] hover:text-[var(--vibe-bg)] transition-all text-[var(--vibe-text)] flex items-center gap-2 shadow-sm active:scale-95"
           >
-            {suggestion}
+            {suggestion.icon}
+            <span>{suggestion.label}</span>
           </button>
         ))}
       </div>
