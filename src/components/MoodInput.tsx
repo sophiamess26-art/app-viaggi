@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Sparkles, Send, Zap, Cpu, Globe, Compass } from 'lucide-react';
+import { Search, Sparkles, Send, Zap, Cpu, Globe, Compass, Activity, Building2, Terminal } from 'lucide-react';
 
 interface MoodInputProps {
   onSearch: (mood: string) => void;
@@ -27,11 +27,12 @@ export const MoodInput: React.FC<MoodInputProps> = ({ onSearch, onChange, isLoad
   };
 
   const suggestions = [
-    { label: 'Neon Nightlife', icon: <Sparkles size={14} /> },
-    { label: 'Futurismo', icon: <Zap size={14} /> },
-    { label: 'Alta Tecnologia', icon: <Cpu size={14} /> },
-    { label: 'Cyberpunk Tokyo', icon: <Globe size={14} /> },
-    { label: 'Minimalist Alps', icon: <Compass size={14} /> }
+    { label: 'Cibernetico', icon: <Terminal size={14} /> },
+    { label: 'Elettrico', icon: <Zap size={14} /> },
+    { label: 'Futuristico', icon: <Cpu size={14} /> },
+    { label: 'Vibrante', icon: <Activity size={14} /> },
+    { label: 'Urbano', icon: <Building2 size={14} /> },
+    { label: 'Neon Nightlife', icon: <Sparkles size={14} /> }
   ];
 
   return (
@@ -60,19 +61,19 @@ export const MoodInput: React.FC<MoodInputProps> = ({ onSearch, onChange, isLoad
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="h-12 px-6 bg-[var(--vibe-primary)] text-[var(--vibe-bg)] rounded-full font-medium flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all active:scale-95"
+              className="h-10 px-5 bg-[var(--vibe-primary)] text-[var(--vibe-bg)] rounded-full font-medium text-sm flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all active:scale-95"
             >
               {isLoading ? (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                 >
-                  <Sparkles size={18} />
+                  <Sparkles size={14} />
                 </motion.div>
               ) : (
                 <>
                   <span>{t.vibeBtn}</span>
-                  <Send size={16} />
+                  <Send size={14} />
                 </>
               )}
             </button>

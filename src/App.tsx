@@ -39,7 +39,16 @@ const TRANSLATIONS: Record<string, any> = {
     travelersLabel: 'Viaggiatori',
     adultsLabel: 'Adulti',
     childrenLabel: 'Bambini',
-    petsLabel: 'Animali'
+    petsLabel: 'Animali',
+    durationLabel: 'Durata (giorni)',
+    regionLabel: 'Regione',
+    regions: {
+      any: 'Ovunque',
+      italy: 'Italia',
+      europe: 'Europa',
+      outside: 'Fuori Europa'
+    },
+    attractionsLabel: 'Cosa Visitare'
   },
   en: {
     heroTitle: 'Discover Your',
@@ -66,7 +75,16 @@ const TRANSLATIONS: Record<string, any> = {
     travelersLabel: 'Travelers',
     adultsLabel: 'Adults',
     childrenLabel: 'Children',
-    petsLabel: 'Pets'
+    petsLabel: 'Pets',
+    durationLabel: 'Duration (days)',
+    regionLabel: 'Region',
+    regions: {
+      any: 'Anywhere',
+      italy: 'Italy',
+      europe: 'Europe',
+      outside: 'Outside Europe'
+    },
+    attractionsLabel: 'What to Visit'
   },
   fr: {
     heroTitle: 'Découvrez Votre',
@@ -93,7 +111,16 @@ const TRANSLATIONS: Record<string, any> = {
     travelersLabel: 'Voyageurs',
     adultsLabel: 'Adultes',
     childrenLabel: 'Enfants',
-    petsLabel: 'Animaux'
+    petsLabel: 'Animaux',
+    durationLabel: 'Durée (jours)',
+    regionLabel: 'Région',
+    regions: {
+      any: 'Partout',
+      italy: 'Italie',
+      europe: 'Europe',
+      outside: 'Hors Europe'
+    },
+    attractionsLabel: 'À Visiter'
   },
   es: {
     heroTitle: 'Descubre Tu',
@@ -120,7 +147,16 @@ const TRANSLATIONS: Record<string, any> = {
     travelersLabel: 'Viajeros',
     adultsLabel: 'Adultos',
     childrenLabel: 'Niños',
-    petsLabel: 'Mascotas'
+    petsLabel: 'Mascotas',
+    durationLabel: 'Duración (días)',
+    regionLabel: 'Región',
+    regions: {
+      any: 'Cualquier lugar',
+      italy: 'Italia',
+      europe: 'Europa',
+      outside: 'Fuera de Europa'
+    },
+    attractionsLabel: 'Qué Visitar'
   },
   de: {
     heroTitle: 'Entdecke Deine',
@@ -147,7 +183,16 @@ const TRANSLATIONS: Record<string, any> = {
     travelersLabel: 'Reisende',
     adultsLabel: 'Erwachsene',
     childrenLabel: 'Kinder',
-    petsLabel: 'Haustiere'
+    petsLabel: 'Haustiere',
+    durationLabel: 'Dauer (Tage)',
+    regionLabel: 'Region',
+    regions: {
+      any: 'Überall',
+      italy: 'Italien',
+      europe: 'Europa',
+      outside: 'Außerhalb Europas'
+    },
+    attractionsLabel: 'Sehenswürdigkeiten'
   }
 };
 
@@ -155,27 +200,66 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [vibeData, setVibeData] = useState<VibeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentLang, setCurrentLang] = useState(LANGUAGES[0]);
+  const [currentLang, setCurrentLang] = useState(() => {
+    const saved = localStorage.getItem('vibeguide-lang');
+    if (saved) {
+      const found = LANGUAGES.find(l => l.id === saved);
+      if (found) return found;
+    }
+    return LANGUAGES[0];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('vibeguide-lang', currentLang.id);
+  }, [currentLang]);
+
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isBudgetMenuOpen, setIsBudgetMenuOpen] = useState(false);
   const [budget, setBudget] = useState({ min: 50, max: 500 });
   const [travelers, setTravelers] = useState({ adults: 1, children: 0, pets: 0 });
+  const [preferences, setPreferences] = useState({ days: 7, region: 'any' });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[currentLang.id];
 
   const getColorFromMood = (mood: string) => {
     const m = mood.toLowerCase();
-    if (m.includes('gioia') || m.includes('felic') || m.includes('joy') || m.includes('happy')) return { primary: '#FBBF24', accent: '#F59E0B' }; // Giallo
-    if (m.includes('tristez') || m.includes('malincon') || m.includes('sad') || m.includes('blue')) return { primary: '#3B82F6', accent: '#2563EB' }; // Blu
-    if (m.includes('disgust') || m.includes('invidia') || m.includes('envy') || m.includes('verde')) return { primary: '#10B981', accent: '#059669' }; // Verde
-    if (m.includes('rabbia') || m.includes('adrenalin') || m.includes('anger') || m.includes('rage') || m.includes('rosso')) return { primary: '#EF4444', accent: '#DC2626' }; // Rosso
-    if (m.includes('noia') || m.includes('stanc') || m.includes('bored') || m.includes('tired') || m.includes('viola')) return { primary: '#8B5CF6', accent: '#7C3AED' }; // Viola
-    if (m.includes('energi') || m.includes('creativ') || m.includes('energy') || m.includes('arancione')) return { primary: '#F97316', accent: '#EA580C' }; // Arancione
-    if (m.includes('amore') || m.includes('dolcez') || m.includes('love') || m.includes('rosa')) return { primary: '#EC4899', accent: '#DB2777' }; // Rosa
-    if (m.includes('calm') || m.includes('pace') || m.includes('peace') || m.includes('azzurro')) return { primary: '#06B6D4', accent: '#0891B2' }; // Azzurro
-    if (m.includes('neon') || m.includes('night')) return { primary: '#FF00FF', accent: '#00FFFF' }; // Neon (Magenta/Ciano)
-    if (m.includes('futur') || m.includes('tecnolog') || m.includes('tech')) return { primary: '#00D1FF', accent: '#0075FF' }; // Cyber/Tech (Azzurro/Blu)
+    // Giallo (Gioia)
+    if (m.includes('gioia') || m.includes('felic') || m.includes('joy') || m.includes('happy')) 
+      return { primary: '#FBBF24', accent: '#F59E0B', bg: '#FFFBEB' }; 
+    // Blu (Tristezza)
+    if (m.includes('tristez') || m.includes('malincon') || m.includes('sad') || m.includes('blue')) 
+      return { primary: '#3B82F6', accent: '#2563EB', bg: '#EFF6FF' }; 
+    // Verde (Disgusto/Invidia)
+    if (m.includes('disgust') || m.includes('invidia') || m.includes('envy') || m.includes('verde')) 
+      return { primary: '#10B981', accent: '#059669', bg: '#ECFDF5' }; 
+    // Rosso (Rabbia/Adrenalina)
+    if (m.includes('rabbia') || m.includes('adrenalin') || m.includes('anger') || m.includes('rage') || m.includes('rosso')) 
+      return { primary: '#EF4444', accent: '#DC2626', bg: '#FEF2F2' }; 
+    // Viola (Noia/Stanchezza)
+    if (m.includes('noia') || m.includes('stanc') || m.includes('bored') || m.includes('tired') || m.includes('viola')) 
+      return { primary: '#8B5CF6', accent: '#7C3AED', bg: '#F5F3FF' }; 
+    // Arancione (Energia)
+    if (m.includes('energi') || m.includes('creativ') || m.includes('energy') || m.includes('arancione')) 
+      return { primary: '#F97316', accent: '#EA580C', bg: '#FFF7ED' }; 
+    // Rosa (Amore)
+    if (m.includes('amore') || m.includes('dolcez') || m.includes('love') || m.includes('rosa')) 
+      return { primary: '#EC4899', accent: '#DB2777', bg: '#FDF2F8' }; 
+    // Azzurro (Calma)
+    if (m.includes('calm') || m.includes('pace') || m.includes('peace') || m.includes('azzurro')) 
+      return { primary: '#06B6D4', accent: '#0891B2', bg: '#ECFEFF' }; 
+    // Neon
+    if (m.includes('neon') || m.includes('night')) 
+      return { primary: '#FF00FF', accent: '#00FFFF', bg: '#0F172A' }; 
+    // Tech / Futuristico
+    if (m.includes('futur') || m.includes('tecnolog') || m.includes('tech') || m.includes('cibernetico')) 
+      return { primary: '#00D1FF', accent: '#0075FF', bg: '#F8FAFC' }; 
+    // Elettrico / Vibrante
+    if (m.includes('elettrico') || m.includes('vibrante') || m.includes('zap')) 
+      return { primary: '#FFFF00', accent: '#FF00FF', bg: '#111111' };
+    // Urbano
+    if (m.includes('urbano') || m.includes('città') || m.includes('city')) 
+      return { primary: '#64748B', accent: '#334155', bg: '#F1F5F9' };
     return null;
   };
 
@@ -185,6 +269,10 @@ export default function App() {
       const root = document.documentElement;
       root.style.setProperty('--vibe-primary', colors.primary);
       root.style.setProperty('--vibe-accent', colors.accent);
+      root.style.setProperty('--vibe-bg', colors.bg);
+      // Update text color based on background brightness for accessibility
+      const isDark = colors.bg === '#0F172A';
+      root.style.setProperty('--vibe-text', isDark ? '#F8FAFC' : '#0F172A');
     }
   };
 
@@ -192,7 +280,10 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await interpretMood(mood, currentLang.label, budget, travelers);
+      const data = await interpretMood(mood, currentLang.label, budget, travelers, {
+        days: preferences.days,
+        region: t.regions[preferences.region as keyof typeof t.regions]
+      });
       setVibeData(data);
       
       // Update CSS variables for dynamic theme
@@ -217,11 +308,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto cursor-pointer">
-          <span className="font-display font-bold text-xl tracking-tighter text-[var(--vibe-text)]">VibeGuide</span>
-        </div>
-        
+      <nav className="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-end items-center pointer-events-none">
         <div className="flex gap-4 pointer-events-auto relative">
           <div className="relative">
             <button 
@@ -278,7 +365,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-72 glass-panel p-6 shadow-2xl z-[60] space-y-6"
+                  className="absolute right-0 mt-2 w-72 glass-panel p-6 shadow-2xl z-[60] space-y-6 max-h-[80vh] overflow-y-auto no-scrollbar"
                 >
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -345,6 +432,43 @@ export default function App() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-black/5">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-widest opacity-50">{t.durationLabel}</h4>
+                      <div className="flex items-center gap-4">
+                        <input 
+                          type="number" 
+                          min="1" 
+                          max="90"
+                          value={preferences.days}
+                          onChange={(e) => setPreferences(prev => ({ ...prev, days: Number(e.target.value) }))}
+                          className="w-20 glass-panel px-3 py-2 text-sm font-bold text-[var(--vibe-primary)] focus:outline-none"
+                        />
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="30" 
+                          value={preferences.days}
+                          onChange={(e) => setPreferences(prev => ({ ...prev, days: Number(e.target.value) }))}
+                          className="flex-1 accent-[var(--vibe-primary)]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-widest opacity-50">{t.regionLabel}</h4>
+                      <select 
+                        value={preferences.region}
+                        onChange={(e) => setPreferences(prev => ({ ...prev, region: e.target.value }))}
+                        className="w-full glass-panel px-3 py-2 text-sm font-bold text-[var(--vibe-primary)] focus:outline-none appearance-none cursor-pointer"
+                      >
+                        {Object.keys(t.regions).map(key => (
+                          <option key={key} value={key} className="bg-white text-black">{t.regions[key as keyof typeof t.regions]}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </motion.div>
@@ -416,25 +540,25 @@ export default function App() {
             className="relative z-10"
           >
             {/* Mood Tags Bar */}
-            <div className="sticky top-0 z-40 bg-[var(--vibe-bg)]/80 backdrop-blur-md border-b border-black/5 py-4 px-8 mb-16">
+            <div className="sticky top-0 z-40 bg-[var(--vibe-bg)]/80 backdrop-blur-md border-b border-black/5 py-2 px-6 mb-8">
               <div className="max-w-6xl mx-auto flex items-center justify-between">
-                <div className="flex gap-3 overflow-x-auto no-scrollbar">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
                   {vibeData.mood_tags.map((tag) => (
                     <span 
                       key={tag}
-                      className="px-4 py-1.5 rounded-full bg-[var(--vibe-primary)] text-[var(--vibe-bg)] text-xs font-bold uppercase tracking-widest"
+                      className="px-3 py-1 rounded-full bg-[var(--vibe-primary)] text-[var(--vibe-bg)] text-[10px] font-bold uppercase tracking-widest"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
-                <div className="hidden md:flex items-center gap-4">
-                  <div className="flex -space-x-2">
+                <div className="hidden md:flex items-center gap-3">
+                  <div className="flex -space-x-1.5">
                     {[vibeData.color_palette.primary, vibeData.color_palette.accent, vibeData.color_palette.bg].map((c, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-[var(--vibe-bg)] shadow-sm" style={{ backgroundColor: c }} />
+                      <div key={i} className="w-4 h-4 rounded-full border-2 border-[var(--vibe-bg)] shadow-sm" style={{ backgroundColor: c }} />
                     ))}
                   </div>
-                  <span className="text-xs font-mono opacity-40">{t.currentPalette}</span>
+                  <span className="text-[10px] font-mono opacity-40">{t.currentPalette}</span>
                 </div>
               </div>
             </div>

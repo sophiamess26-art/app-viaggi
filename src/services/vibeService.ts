@@ -36,6 +36,11 @@ export interface VibeResponse {
         weight: string;
       };
     }[];
+    attractions: {
+      name: string;
+      description: string;
+      type: string;
+    }[];
   }[];
 }
 
@@ -43,7 +48,8 @@ export async function interpretMood(
   prompt: string, 
   language: string = "ITALIANO", 
   budget?: { min: number, max: number },
-  travelers?: { adults: number, children: number, pets: number }
+  travelers?: { adults: number, children: number, pets: number },
+  preferences?: { days: number, region: string }
 ): Promise<VibeResponse> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
   
@@ -55,16 +61,22 @@ export async function interpretMood(
     ? `Il viaggio è per ${travelers.adults} adulti, ${travelers.children} bambini e ${travelers.pets} animali domestici. Assicurati che gli hotel e i voli siano adatti a questo gruppo e che i prezzi stimati riflettano il totale per questo numero di persone.`
     : "";
 
+  const prefsContext = preferences
+    ? `La durata del viaggio è di ${preferences.days} giorni. La regione preferita è: ${preferences.region} (es. "Italia", "Europa", "Fuori Europa", "Ovunque"). Suggerisci solo luoghi che rispettino questa preferenza geografica.`
+    : "";
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Interpreta questo mood di viaggio: "${prompt}". 
     Restituisci un oggetto JSON che catturi l'estetica e suggerisca 5 luoghi specifici in tutto il mondo che corrispondano perfettamente a questa vibrazione.
     ${budgetContext}
     ${travelersContext}
+    ${prefsContext}
     Per ogni luogo, includi:
     1. Un hotel consigliato con istruzioni su come arrivarci (mezzi pubblici o taxi).
     2. Un piatto tipico con il posto migliore dove mangiarlo e dettagli su dove si trova esattamente.
     3. Tre opzioni di volo (ECONOMY, PREMIUM, LUXURY) con dettagli sulla compagnia aerea, prezzo stimato e regole precise per il bagaglio (misure e peso).
+    4. Una lista di 3 attrazioni o punti di interesse imperdibili in quel luogo con una breve descrizione.
     IMPORTANTE: Tutte le descrizioni, i tag e le motivazioni estetiche devono essere in ${language.toUpperCase()}.`,
     config: {
       responseMimeType: "application/json",
@@ -136,9 +148,21 @@ export async function interpretMood(
                     },
                     required: ["type", "airline", "estimated_price", "baggage"]
                   }
+                },
+                attractions: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING, description: "Nome dell'attrazione" },
+                      description: { type: Type.STRING, description: `Breve descrizione dell'attrazione in ${language}` },
+                      type: { type: Type.STRING, description: `Tipo di attrazione (es. Museo, Parco, Monumento) in ${language}` }
+                    },
+                    required: ["name", "description", "type"]
+                  }
                 }
               },
-              required: ["id", "name", "country", "description", "aesthetic_reason", "image_query", "hotel", "food", "flights"]
+              required: ["id", "name", "country", "description", "aesthetic_reason", "image_query", "hotel", "food", "flights", "attractions"]
             }
           }
         },

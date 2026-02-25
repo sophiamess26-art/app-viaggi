@@ -30,6 +30,11 @@ interface Location {
       weight: string;
     };
   }[];
+  attractions: {
+    name: string;
+    description: string;
+    type: string;
+  }[];
 }
 
 interface VibeScrollProps {
@@ -86,6 +91,31 @@ export const VibeScroll: React.FC<VibeScrollProps> = ({ locations, translations 
                 <p className="text-lg text-[var(--vibe-text)] opacity-70 leading-relaxed">
                   {loc.description}
                 </p>
+              </div>
+
+              {/* Attractions Section */}
+              <div className="space-y-6 pt-8">
+                <div className="flex items-center gap-2 text-[var(--vibe-primary)] font-bold text-sm uppercase tracking-wider">
+                  <MapIcon size={18} />
+                  <span>{t.attractionsLabel}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {loc.attractions.map((attr) => (
+                    <motion.div 
+                      key={attr.name}
+                      whileHover={{ y: -5 }}
+                      onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${attr.name}, ${loc.name}, ${loc.country}`)}`, '_blank')}
+                      className="glass-panel p-6 space-y-3 cursor-pointer group/attr border-t-4 border-t-[var(--vibe-accent)]/30"
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">{attr.type}</span>
+                        <MapIcon size={12} className="opacity-0 group-hover/attr:opacity-100 transition-opacity text-[var(--vibe-primary)]" />
+                      </div>
+                      <h4 className="font-bold text-sm group-hover/attr:text-[var(--vibe-primary)] transition-colors">{attr.name}</h4>
+                      <p className="text-xs opacity-60 leading-relaxed">{attr.description}</p>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
 
               {/* Flights Section */}
