@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  :root {
+    --vibe-primary: #141414;
+    --vibe-accent: #E0E0E0;
+    --vibe-bg: #F5F5F5;
+    --vibe-text: #141414;
+  }
+
+  body {
+    @apply bg-[var(--vibe-bg)] text-[var(--vibe-text)] transition-colors duration-700 ease-in-out font-sans overflow-x-hidden;
+  }
+}
+
+.liquid-transition {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel {
+  @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl;
+}
+
+/* Custom scrollbar for the infinite scroll feel */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap');

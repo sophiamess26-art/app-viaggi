@@ -1,0 +1,7 @@
+{
+  "name": "VibeGuide",
+  "description": "A frictionless travel discovery experience powered by AI mood interpretation and fluid transitions.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
